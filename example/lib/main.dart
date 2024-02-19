@@ -86,16 +86,17 @@ class _MyAppState extends State<MyApp> {
   OperationStatus rebootingStatus = OperationStatus.NONE;
   String? filePath;
   String? zplData;
+  String? pdfData;
 
   ConnectionType connectionType = ConnectionType.TCP_IP;
-  List<Printer.BluetoothConnectionData> printers = [];
-  Printer.BluetoothConnectionData? selectedPrinter;
+  List<Printer.PrinterConnectionData> printers = [];
+  Printer.PrinterConnectionData? selectedPrinter;
 
   @override
   void initState() {
     super.initState();
     zsdk = Printer.ZSDK(
-      onBluetoothPrinterFound: (Printer.BluetoothConnectionData printer) {
+      printerFound: (Printer.PrinterConnectionData printer) {
         setState(() {
           printers.add(printer);
         });
@@ -277,9 +278,9 @@ class _MyAppState extends State<MyApp> {
                         initialSelection: connectionType,
                         onSelected: (ConnectionType? value) async {
                           if (value == ConnectionType.BLUETOOTH) {
-                            Printer.BluetoothConnectionData? printer =
+                            Printer.PrinterConnectionData? printer =
                                 await Navigator.push<
-                                        Printer.BluetoothConnectionData?>(
+                                        Printer.PrinterConnectionData?>(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
@@ -1396,7 +1397,7 @@ class _MyAppState extends State<MyApp> {
     }
     return zsdk.printPdfFileOverBluetooth(
         filePath: pathController.text,
-        address: selectedPrinter!.macAddress,
+        address: selectedPrinter!.address,
         printerConf: Printer.PrinterConf(
           cmWidth: double.tryParse(widthController.text),
           cmHeight: double.tryParse(heightController.text),
@@ -1421,7 +1422,7 @@ class _MyAppState extends State<MyApp> {
 
     return zsdk.printZplDataOverBluetooth(
         data: zplData!,
-        address: selectedPrinter!.macAddress,
+        address: selectedPrinter!.address,
         printerConf: Printer.PrinterConf(
           cmWidth: double.tryParse(widthController.text),
           cmHeight: double.tryParse(heightController.text),
@@ -1439,7 +1440,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     return zsdk.checkPrinterStatusOverBluetooth(
-      address: selectedPrinter!.macAddress,
+      address: selectedPrinter!.address,
     );
   }
 
@@ -1451,7 +1452,7 @@ class _MyAppState extends State<MyApp> {
       );
     }
     return zsdk.getPrinterSettingsOverBluetooth(
-      address: selectedPrinter!.macAddress,
+      address: selectedPrinter!.address,
     );
   }
 
@@ -1480,7 +1481,7 @@ class _MyAppState extends State<MyApp> {
           ));
     }
     return zsdk.setPrinterSettingsOverBluetooth(
-        address: selectedPrinter!.macAddress,
+        address: selectedPrinter!.address,
         settings: Printer.PrinterSettings(
           darkness: double.tryParse(darknessController.text),
           printSpeed: double.tryParse(printSpeedController.text),
@@ -1509,7 +1510,7 @@ class _MyAppState extends State<MyApp> {
           settings: Printer.PrinterSettings.defaultSettings());
     }
     return zsdk.setPrinterSettingsOverBluetooth(
-        address: selectedPrinter!.macAddress,
+        address: selectedPrinter!.address,
         settings: Printer.PrinterSettings.defaultSettings());
   }
 
@@ -1521,7 +1522,7 @@ class _MyAppState extends State<MyApp> {
       );
     }
     return zsdk.doManualCalibrationOverBluetooth(
-      address: selectedPrinter!.macAddress,
+      address: selectedPrinter!.address,
     );
   }
 
@@ -1533,7 +1534,7 @@ class _MyAppState extends State<MyApp> {
       );
     }
     return zsdk.printConfigurationLabelOverBluetooth(
-      address: selectedPrinter!.macAddress,
+      address: selectedPrinter!.address,
     );
   }
 
@@ -1545,7 +1546,7 @@ class _MyAppState extends State<MyApp> {
       );
     }
     return zsdk.rebootPrinterOverBluetooth(
-      address: selectedPrinter!.macAddress,
+      address: selectedPrinter!.address,
     );
   }
 }

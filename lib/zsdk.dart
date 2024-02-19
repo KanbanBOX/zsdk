@@ -81,9 +81,9 @@ class ZSDK {
   static const String _dpi = "dpi";
 
   late MethodChannel _channel;
-  void Function(BluetoothConnectionData)? onBluetoothPrinterFound;
+  void Function(PrinterConnectionData)? printerFound;
 
-  ZSDK({this.onBluetoothPrinterFound}) {
+  ZSDK({this.printerFound}) {
     _channel = const MethodChannel(_METHOD_CHANNEL);
     _channel.setMethodCallHandler(_onMethodCall);
   }
@@ -234,7 +234,7 @@ class ZSDK {
           int? port,
           PrinterConf? printerConf,
           Duration? timeout}) =>
-      _printDataOverTCPIP(
+      _printPdfDataOverTCPIP(
           method: _PRINT_PDF_DATA_OVER_TCP_IP,
           data: data,
           address: address,
@@ -248,7 +248,7 @@ class ZSDK {
           int? port,
           PrinterConf? printerConf,
           Duration? timeout}) =>
-      _printDataOverTCPIP(
+      _printPdfDataOverTCPIP(
           method: _PRINT_ZPL_DATA_OVER_TCP_IP,
           data: data,
           address: address,
@@ -256,7 +256,7 @@ class ZSDK {
           printerConf: printerConf,
           timeout: timeout);
 
-  Future _printDataOverTCPIP(
+  Future _printPdfDataOverTCPIP(
           {required method,
           required dynamic data,
           required String address,
@@ -380,11 +380,11 @@ class ZSDK {
           onTimeout: () => _onTimeout(timeout: timeout));
 
   Future printPdfDataOverBluetooth(
-          {required ByteData data,
+          {required Uint8List data,
           required String address,
           PrinterConf? printerConf,
           Duration? timeout}) =>
-      _printDataOverBluetooth(
+      _printPdfDataOverBluetooth(
           method: _PRINT_PDF_DATA_OVER_BLUETOOTH,
           data: data,
           address: address,
@@ -396,14 +396,14 @@ class ZSDK {
           required String address,
           PrinterConf? printerConf,
           Duration? timeout}) =>
-      _printDataOverBluetooth(
+      _printPdfDataOverBluetooth(
           method: _PRINT_ZPL_DATA_OVER_BLUETOOTH,
           data: data,
           address: address,
           printerConf: printerConf,
           timeout: timeout);
 
-  Future _printDataOverBluetooth(
+  Future _printPdfDataOverBluetooth(
           {required method,
           required dynamic data,
           required String address,
@@ -421,6 +421,6 @@ class ZSDK {
           onTimeout: () => _onTimeout(timeout: timeout));
 
   void handleBluetoothPrinterFound(MethodCall call) {
-    onBluetoothPrinterFound!(BluetoothConnectionData.fromJson(call.arguments as String));
+    printerFound!(PrinterConnectionData.fromJson(call.arguments as String));
   }
 }

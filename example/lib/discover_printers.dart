@@ -11,12 +11,12 @@ class _DiscoverPrintersState extends State<DiscoverPrinters>
 {
   bool stillLookingForPrinters = true;
   late ZSDK _zebraLinkosSdkPlugin;
-  List<BluetoothConnectionData> printerList = [];
+  List<PrinterConnectionData> printerList = [];
 
   @override
   void initState() {
     super.initState();
-    _zebraLinkosSdkPlugin = ZSDK(onBluetoothPrinterFound: _onPrinterFound);
+    _zebraLinkosSdkPlugin = ZSDK(printerFound: _onPrinterFound);
     WidgetsBinding.instance.addPostFrameCallback((_) => _onAfterFirstBuild());
   }
 
@@ -39,11 +39,11 @@ class _DiscoverPrintersState extends State<DiscoverPrinters>
                 padding: const EdgeInsets.all(10),
                 itemCount: printerList.length,
                 itemBuilder: (context, index) {
-                  final BluetoothConnectionData printer = printerList[index];
+                  final PrinterConnectionData printer = printerList[index];
 
                   return ListTile(
                     title: Text('Friendly name: ${printer.friendlyName}'),
-                    subtitle: Text('Address: ${printer.macAddress}'),
+                    subtitle: Text('Address: ${printer.address}'),
                     onTap: () {
                       Navigator.pop(context, printer);
                     }
@@ -74,7 +74,7 @@ class _DiscoverPrintersState extends State<DiscoverPrinters>
     }
   }
 
-  _onPrinterFound(BluetoothConnectionData printerConnectionData) {
+  _onPrinterFound(PrinterConnectionData printerConnectionData) {
     setState(() {
       printerList.add(printerConnectionData);
     });

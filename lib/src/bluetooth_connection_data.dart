@@ -1,22 +1,24 @@
 import 'dart:convert';
 
-class BluetoothConnectionData {
-  String macAddress;
-  String friendlyName;
-  bool isLowEnergy;
+enum PrinterConnectionType { bluetooth, network }
 
-  BluetoothConnectionData(
-      this.macAddress,
+class PrinterConnectionData {
+  String address;
+  String friendlyName;
+  PrinterConnectionType type;
+
+  PrinterConnectionData(
+      this.address,
       this.friendlyName,
-      this.isLowEnergy
+      this.type
     );
 
-  static BluetoothConnectionData fromJson(String jsonString){
+  static PrinterConnectionData fromJson(String jsonString){
     Map<String, dynamic> decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-    return BluetoothConnectionData(
+    return PrinterConnectionData(
         decoded['address'],
         decoded['friendlyName'],
-        decoded['isLowEnergy'] == 'true' ? true : false,
+        PrinterConnectionType.from
     );
   }
 }

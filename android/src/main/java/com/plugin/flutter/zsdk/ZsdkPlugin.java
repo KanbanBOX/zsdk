@@ -5,6 +5,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.zebra.sdk.btleComm.BluetoothLeConnection;
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.TcpConnection;
 
@@ -57,8 +58,10 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
   static final String _DO_MANUAL_CALIBRATION_OVER_TCP_IP = "doManualCalibrationOverTCPIP";
   static final String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP = "printConfigurationLabelOverTCPIP";
   static final String _REBOOT_PRINTER_OVER_TCP_IP = "rebootPrinterOverTCPIP";
+  static final String _FIND_PRINTERS_OVER_TCP_IP = "findPrintersOverTCPIP";
 
   static final String _PRINT_PDF_FILE_OVER_BLUETOOTH = "printPdfFileOverBluetooth";
+  static final String _PRINT_PDF_DATA_OVER_BLUETOOTH = "printPdfDataOverBluetooth";
   static final String _PRINT_ZPL_FILE_OVER_BLUETOOTH = "printZplFileOverBluetooth";
   static final String _PRINT_ZPL_DATA_OVER_BLUETOOTH = "printZplDataOverBluetooth";
   static final String _CHECK_PRINTER_STATUS_OVER_BLUETOOTH = "checkPrinterStatusOverBluetooth";
@@ -157,6 +160,15 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                       newTcpConnection(call)
                   );
                   break;
+              case _PRINT_PDF_DATA_OVER_TCP_IP:
+                  printer.printPdfData(
+                      call.argument(_data),
+                      newTcpConnection(call)
+                  );
+                  break;
+              case _FIND_PRINTERS_OVER_TCP_IP:
+                  printer.findPrintersOverTCPIP();
+                  break;
               case _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH:
                   printer.doManualCalibration(
                       newBluetoothConnection(call)
@@ -209,7 +221,12 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
               case _FIND_PRINTERS_OVER_BLUETOOTH:
                   printer.findPrintersOverBluetooth();
                   break;
-              case _PRINT_PDF_DATA_OVER_TCP_IP:
+              case _PRINT_PDF_DATA_OVER_BLUETOOTH:
+                  printer.printPdfData(
+                      call.argument(_data),
+                      newBluetoothConnection(call)
+                  );
+                  break;
               default:
                   result.notImplemented();
           }

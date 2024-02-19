@@ -65,7 +65,7 @@ and run `flutter pub get` to download the library sources to your pub-cache.
 ```dart
 final zsdk = ZSDK();
 // or if you'd like to use the bluetooth printing
-final zsdk = ZSDK(onBluetoothPrinterFound: (BluetoothConnectionData printer) {
+final zsdk = ZSDK(printerFound: (PrinterConnectionData printer) {
   // Do something here when a printer is found
 });
 ```
@@ -236,7 +236,7 @@ zsdk.printPdfFileOverTCPIP(
 ### search for bluetooth printers
 ```dart
 zsdk.findPrintersOverBluetooth()
-//use the onBluetoothPrinterFound callback to collect the found printers
+//use the printerFound callback to collect the found printers
 ```
 
 *Check the example code for more details*

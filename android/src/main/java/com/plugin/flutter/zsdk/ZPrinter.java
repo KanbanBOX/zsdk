@@ -15,6 +15,7 @@ import com.zebra.sdk.printer.ZebraPrinterFactory;
 import com.zebra.sdk.printer.ZebraPrinterLinkOs;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
+import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
 import com.zebra.sdk.util.internal.FileUtilities;
 
 import org.json.JSONObject;
@@ -243,6 +244,12 @@ public class ZPrinter
                 onException(e, null);
             }
         }).start();
+    }
+
+    public void printPdfData(final byte[] data, final Connection connection) {
+        new Thread(() -> doPrintDataStream(
+            new ByteArrayInputStream(data), connection, false))
+            .start();
     }
 
     /** This function needs more tests as it relies on converting the PDF to image. */
@@ -509,7 +516,7 @@ public class ZPrinter
                     @Override
                     public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
                         System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
-                        handler.post(() -> bluetoothPrinterFound(discoveredPrinter, true));
+                        handler.post(() -> printerFound(discoveredPrinter));
                     }
 
                     @Override
@@ -533,12 +540,43 @@ public class ZPrinter
         findPrinters.start();
     }
 
-    private void bluetoothPrinterFound(DiscoveredPrinter printer, Boolean isLowEnergy) {
+    public void findPrintersOverTCPIP() {
+
+        Thread findPrinters = new Thread(() -> {
+            try {
+                System.out.println("BluetoothLeDiscoverer: started");
+                NetworkDiscoverer.findPrinters(context, new DiscoveryHandler() {
+                    @Override
+                    public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                        System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
+                        handler.post(() -> printerFound(discoveredPrinter));
+                    }
+
+                    @Override
+                    public void discoveryFinished() {
+                        System.out.println("NetworkDiscoverer: discovery finished");
+                        handler.post(() -> result.success(null));
+                    }
+
+                    @Override
+                    public void discoveryError(String s) {
+                        PrinterResponse response = new PrinterResponse(ErrorCode.PRINTER_ERROR, null, s);
+                        handler.post(() -> result.error(ErrorCode.PRINTER_ERROR.toString(), s, response.toMap()));
+                    }
+                });
+
+            } catch (ConnectionException e) {
+            }
+        });
+
+        findPrinters.start();
+    }
+
+    private void printerFound(DiscoveredPrinter printer) {
         HashMap<String, String> args = new HashMap<>();
         args.put("address", printer.address);
         args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
-        args.put("isLowEnergy", isLowEnergy.toString());
 
-        channel.invokeMethod("bluetoothPrinterFound", (new JSONObject(args)).toString());
+        channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
     }
 }
