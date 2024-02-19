@@ -385,6 +385,9 @@ public class ZPrinter
         Cause cause = Cause.UNKNOWN;
         if(printer != null) {
             try {
+                if(!printer.getConnection().isConnected()){
+                    printer.getConnection().open();
+                }
                 PrinterStatus printerStatus = printer.getCurrentStatus();
 
                 if(printerStatus.isPaused) status = Status.PAUSED;
