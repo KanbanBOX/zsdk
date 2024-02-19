@@ -4,7 +4,7 @@ enum PrinterConnectionType { bluetooth, network }
 
 class PrinterConnectionData {
   String address;
-  String friendlyName;
+  String? friendlyName;
   PrinterConnectionType type;
 
   PrinterConnectionData(
@@ -18,7 +18,15 @@ class PrinterConnectionData {
     return PrinterConnectionData(
         decoded['address'],
         decoded['friendlyName'],
-        PrinterConnectionType.from
+        PrinterConnectionType.values.byName(decoded['type'] as String)
     );
+  }
+
+  String toJson() {
+    return jsonEncode({
+      'address': address,
+      'friendlyName': friendlyName,
+      'type': type.name
+    });
   }
 }

@@ -52,6 +52,7 @@ class ZSDK {
       "doManualCalibrationOverTCPIP";
   static const String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP =
       "printConfigurationLabelOverTCPIP";
+  static const String _FIND_PRINTERS_OVER_TCP_IP = "findPrintersOverTCPIP";
   static const String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetooth";
   static const String _REBOOT_PRINTER_OVER_TCP_IP = "rebootPrinterOverBluetooth";
   static const String _PRINT_PDF_FILE_OVER_BLUETOOTH = "printPdfFileOverBluetooth";
@@ -90,8 +91,8 @@ class ZSDK {
 
   Future<void> _onMethodCall(MethodCall call) async {
     switch (call.method) {
-      case "bluetoothPrinterFound":
-        handleBluetoothPrinterFound(call);
+      case "printerFound":
+        handlePrinterFound(call);
         break;
       default:
         print(call.arguments);
@@ -229,7 +230,7 @@ class ZSDK {
           onTimeout: () => _onTimeout(timeout: timeout));
 
   Future printPdfDataOverTCPIP(
-          {required ByteData data,
+          {required Uint8List data,
           required String address,
           int? port,
           PrinterConf? printerConf,
@@ -276,6 +277,8 @@ class ZSDK {
           onTimeout: () => _onTimeout(timeout: timeout));
 
   Future findPrintersOverBluetooth() => _channel.invokeMethod(_FIND_PRINTERS_OVER_BLUETOOTH);
+
+  Future findPrintersOverTCPIP() => _channel.invokeMethod(_FIND_PRINTERS_OVER_TCP_IP);
 
   Future doManualCalibrationOverBluetooth(
           {required String address, Duration? timeout}) =>
@@ -420,7 +423,7 @@ class ZSDK {
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
           onTimeout: () => _onTimeout(timeout: timeout));
 
-  void handleBluetoothPrinterFound(MethodCall call) {
+  void handlePrinterFound(MethodCall call) {
     printerFound!(PrinterConnectionData.fromJson(call.arguments as String));
   }
 }

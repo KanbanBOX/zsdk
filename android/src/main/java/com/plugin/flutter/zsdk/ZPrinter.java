@@ -14,6 +14,7 @@ import com.zebra.sdk.printer.ZebraPrinter;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
 import com.zebra.sdk.printer.ZebraPrinterLinkOs;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
+import com.zebra.sdk.printer.discovery.DiscoveryException;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
 import com.zebra.sdk.util.internal.FileUtilities;
@@ -516,7 +517,7 @@ public class ZPrinter
                     @Override
                     public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
                         System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
-                        handler.post(() -> printerFound(discoveredPrinter));
+                        handler.post(() -> printerFound(discoveredPrinter, true));
                     }
 
                     @Override
@@ -544,12 +545,12 @@ public class ZPrinter
 
         Thread findPrinters = new Thread(() -> {
             try {
-                System.out.println("BluetoothLeDiscoverer: started");
-                NetworkDiscoverer.findPrinters(context, new DiscoveryHandler() {
+                System.out.println("NetworkDiscoverer: started");
+                NetworkDiscoverer.findPrinters(new DiscoveryHandler() {
                     @Override
                     public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
                         System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
-                        handler.post(() -> printerFound(discoveredPrinter));
+                        handler.post(() -> printerFound(discoveredPrinter, false));
                     }
 
                     @Override
@@ -565,17 +566,23 @@ public class ZPrinter
                     }
                 });
 
-            } catch (ConnectionException e) {
+            } catch (DiscoveryException e) {
             }
         });
 
         findPrinters.start();
     }
 
-    private void printerFound(DiscoveredPrinter printer) {
+    private void printerFound(DiscoveredPrinter printer, boolean isBluetooth) {
         HashMap<String, String> args = new HashMap<>();
+        System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
         args.put("address", printer.address);
-        args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
+        if(isBluetooth) {
+            args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
+        } else {
+            args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
+        }
+        args.put("type", isBluetooth ? "bluetooth" : "network");
 
         channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
     }
