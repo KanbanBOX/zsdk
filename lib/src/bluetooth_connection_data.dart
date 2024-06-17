@@ -6,11 +6,13 @@ class PrinterConnectionData {
   String address;
   String? friendlyName;
   PrinterConnectionType type;
+  bool supportsPDF;
 
   PrinterConnectionData(
       this.address,
       this.friendlyName,
-      this.type
+      this.type,
+      this.supportsPDF
     );
 
   static PrinterConnectionData fromJson(String jsonString){
@@ -18,7 +20,8 @@ class PrinterConnectionData {
     return PrinterConnectionData(
         decoded['address'],
         decoded['friendlyName'],
-        PrinterConnectionType.values.byName(decoded['type'] as String)
+        PrinterConnectionType.values.byName(decoded['type'] as String),
+        decoded['supportsPDF']
     );
   }
 
@@ -26,7 +29,8 @@ class PrinterConnectionData {
     return jsonEncode({
       'address': address,
       'friendlyName': friendlyName,
-      'type': type.name
+      'type': type.name,
+      'supportsPDF': supportsPDF
     });
   }
 }

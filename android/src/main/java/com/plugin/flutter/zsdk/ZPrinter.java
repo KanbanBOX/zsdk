@@ -2,6 +2,7 @@ package com.plugin.flutter.zsdk;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.zebra.sdk.btleComm.BluetoothLeDiscoverer;
@@ -581,6 +582,13 @@ public class ZPrinter
         findPrinters.start();
     }
 
+    // Checks the selected printer to see if it has the pdf virtual device installed.
+    private boolean zebraPrinterSupportsPDF(Connection connection) throws ConnectionException {
+        // Use SGD command to check if apl.enable returns "pdf"
+        String printerInfo = SGD.GET("apl.enable", connection);
+        return printerInfo.equals("pdf");
+    }
+
     private void printerFound(DiscoveredPrinter printer, boolean isBluetooth) {
         HashMap<String, String> args = new HashMap<>();
         System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
@@ -591,6 +599,7 @@ public class ZPrinter
             args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
         }
         args.put("type", isBluetooth ? "bluetooth" : "network");
+        args.put("supportsPDF", zebraPrinterSupportsPDF(printer.getConnection()));
 
         channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
     }
