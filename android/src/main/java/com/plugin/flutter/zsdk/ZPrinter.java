@@ -520,10 +520,12 @@ public class ZPrinter
                     public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
                         System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
                         try {
-                            final boolean supportsPdf = getAllSettings(discoveredPrinter.getConnection()).get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                            final Map<String, String> settings = getAllSettings(discoveredPrinter.getConnection());
+                            final boolean supportsPdf = settings.get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                            final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
                             handler.post(() -> {
                                 try {
-                                    printerFound(discoveredPrinter, true, supportsPdf);
+                                    printerFound(discoveredPrinter, true, supportsPdf, dpi);
                                 } catch (Exception ignored) {
                                 }
                             });
@@ -565,10 +567,12 @@ public class ZPrinter
                 public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
                     System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
                     try {
-                        final boolean supportsPdf = getAllSettings(discoveredPrinter.getConnection()).get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                        final Map<String, String> settings = getAllSettings(discoveredPrinter.getConnection());
+                        final boolean supportsPdf = settings.get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                        final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
                         handler.post(() -> {
                             try {
-                                printerFound(discoveredPrinter, false, supportsPdf);
+                                printerFound(discoveredPrinter, false, supportsPdf, dpi);
                             } catch (Exception ignored) {
                             }
                         });
@@ -600,7 +604,7 @@ public class ZPrinter
         findPrinters.start();
     }
 
-    private void printerFound(DiscoveredPrinter printer, boolean isBluetooth, boolean supportsPdf) throws Exception {
+    private void printerFound(DiscoveredPrinter printer, boolean isBluetooth, boolean supportsPdf, String dpi) throws Exception {
         HashMap<String, String> args = new HashMap<>();
         System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
         args.put("address", printer.address);
@@ -611,6 +615,7 @@ public class ZPrinter
         }
         args.put("type", isBluetooth ? "bluetooth" : "network");
         args.put("supportsPDF", supportsPdf ? "true" : "false");
+        args.put("dpi", dpi);
 
         channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
     }
