@@ -21,7 +21,7 @@ class PrinterConnectionData {
         decoded['address'],
         decoded['friendlyName'],
         PrinterConnectionType.values.byName(decoded['type'] as String),
-        decoded['supportsPDF']
+        decoded['supportsPDF'] == 'true'
     );
   }
 
@@ -30,7 +30,7 @@ class PrinterConnectionData {
       'address': address,
       'friendlyName': friendlyName,
       'type': type.name,
-      'supportsPDF': supportsPDF
+      'supportsPDF': supportsPDF ? 'true' : 'false'
     });
   }
 }

@@ -2,8 +2,6 @@ package com.plugin.flutter.zsdk;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 
 import com.zebra.sdk.btleComm.BluetoothLeDiscoverer;
 import com.zebra.sdk.comm.Connection;
@@ -18,6 +16,7 @@ import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveryException;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
+import com.zebra.sdk.settings.SettingsException;
 import com.zebra.sdk.util.internal.FileUtilities;
 
 import org.json.JSONObject;
@@ -438,17 +437,11 @@ public class ZPrinter
         return VirtualDeviceUtils.changeVirtualDevice(connection, enable ? SGDParams.VALUE_PDF : SGDParams.VALUE_NONE);
     }
 
-    public void printAllValues(Connection connection) throws Exception {
-        Log.e("allSettingsValues", SGD.GET(SGDParams.VALUE_GET_ALL, connection));
-    }
-
-    public void printAllSettings(Connection connection) throws Exception {
-        if(connection == null) return;
+    public Map<String, String> getAllSettings(Connection connection) throws ConnectionException, SettingsException {
+        if(connection == null) return new HashMap<>();
         if(!connection.isConnected()) connection.open();
         ZebraPrinterLinkOs printerLinkOs = ZebraPrinterFactory.getLinkOsPrinter(connection);
-        Map<String, String> allSettings = printerLinkOs.getAllSettingValues();
-        for(String key : allSettings.keySet())
-            Log.e("paramSetting", key+"--->"+allSettings.get(key));
+        return printerLinkOs.getAllSettingValues();
     }
 
     public void rebootPrinter(final Connection connection) {
@@ -520,13 +513,26 @@ public class ZPrinter
     public void findPrintersOverBluetooth() {
 
         Thread findPrinters = new Thread(() -> {
+            System.out.println("BluetoothLeDiscoverer: started");
             try {
-                System.out.println("BluetoothLeDiscoverer: started");
                 BluetoothLeDiscoverer.findPrinters(context, new DiscoveryHandler() {
                     @Override
                     public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
                         System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
-                        handler.post(() -> printerFound(discoveredPrinter, true));
+                        try {
+                            final boolean supportsPdf = getAllSettings(discoveredPrinter.getConnection()).get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                            handler.post(() -> {
+                                try {
+                                    printerFound(discoveredPrinter, true, supportsPdf);
+                                } catch (Exception ignored) {
+                                }
+                            });
+                        } catch (ConnectionException e) {
+                            throw new RuntimeException(e);
+                        } catch (SettingsException e) {
+                            throw new RuntimeException(e);
+                        }
+
                     }
 
                     @Override
@@ -541,7 +547,6 @@ public class ZPrinter
                         handler.post(() -> result.error(ErrorCode.PRINTER_ERROR.toString(), s, response.toMap()));
                     }
                 });
-
             } catch (ConnectionException e) {
                 onConnectionTimeOut(e);
             }
@@ -553,43 +558,49 @@ public class ZPrinter
     public void findPrintersOverTCPIP() {
 
         Thread findPrinters = new Thread(() -> {
+            System.out.println("NetworkDiscoverer: started");
             try {
-                System.out.println("NetworkDiscoverer: started");
                 NetworkDiscoverer.findPrinters(new DiscoveryHandler() {
-                    @Override
-                    public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-                        System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
-                        handler.post(() -> printerFound(discoveredPrinter, false));
+                @Override
+                public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                    System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
+                    try {
+                        final boolean supportsPdf = getAllSettings(discoveredPrinter.getConnection()).get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                        handler.post(() -> {
+                            try {
+                                printerFound(discoveredPrinter, false, supportsPdf);
+                            } catch (Exception ignored) {
+                            }
+                        });
+                    } catch (ConnectionException e) {
+                        throw new RuntimeException(e);
+                    } catch (SettingsException e) {
+                        throw new RuntimeException(e);
                     }
 
-                    @Override
-                    public void discoveryFinished() {
-                        System.out.println("NetworkDiscoverer: discovery finished");
-                        handler.post(() -> result.success(null));
-                    }
+                }
 
-                    @Override
-                    public void discoveryError(String s) {
-                        PrinterResponse response = new PrinterResponse(ErrorCode.PRINTER_ERROR, null, s);
-                        handler.post(() -> result.error(ErrorCode.PRINTER_ERROR.toString(), s, response.toMap()));
-                    }
-                });
+                @Override
+                public void discoveryFinished() {
+                    System.out.println("NetworkDiscoverer: discovery finished");
+                    handler.post(() -> result.success(null));
+                }
 
+                @Override
+                public void discoveryError(String s) {
+                    PrinterResponse response = new PrinterResponse(ErrorCode.PRINTER_ERROR, null, s);
+                    handler.post(() -> result.error(ErrorCode.PRINTER_ERROR.toString(), s, response.toMap()));
+                }
+            });
             } catch (DiscoveryException e) {
+                e.printStackTrace();
             }
         });
 
         findPrinters.start();
     }
 
-    // Checks the selected printer to see if it has the pdf virtual device installed.
-    private boolean zebraPrinterSupportsPDF(Connection connection) throws ConnectionException {
-        // Use SGD command to check if apl.enable returns "pdf"
-        String printerInfo = SGD.GET("apl.enable", connection);
-        return printerInfo.equals("pdf");
-    }
-
-    private void printerFound(DiscoveredPrinter printer, boolean isBluetooth) {
+    private void printerFound(DiscoveredPrinter printer, boolean isBluetooth, boolean supportsPdf) throws Exception {
         HashMap<String, String> args = new HashMap<>();
         System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
         args.put("address", printer.address);
@@ -599,7 +610,7 @@ public class ZPrinter
             args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
         }
         args.put("type", isBluetooth ? "bluetooth" : "network");
-        args.put("supportsPDF", zebraPrinterSupportsPDF(printer.getConnection()));
+        args.put("supportsPDF", supportsPdf ? "true" : "false");
 
         channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
     }
