@@ -530,9 +530,9 @@ public class ZPrinter
                                 }
                             });
                         } catch (ConnectionException e) {
-                            throw new RuntimeException(e);
+                            onConnectionTimeOut(e);
                         } catch (SettingsException e) {
-                            throw new RuntimeException(e);
+                            e.printStackTrace();
                         }
 
                     }
@@ -577,9 +577,9 @@ public class ZPrinter
                             }
                         });
                     } catch (ConnectionException e) {
-                        throw new RuntimeException(e);
+                        onConnectionTimeOut(e);
                     } catch (SettingsException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
 
                 }
