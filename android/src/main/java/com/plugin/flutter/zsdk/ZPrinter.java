@@ -530,7 +530,7 @@ public class ZPrinter
                                 }
                             });
                         } catch (ConnectionException e) {
-                            onConnectionTimeOut(e);
+                            e.printStackTrace();
                         } catch (SettingsException e) {
                             e.printStackTrace();
                         }
@@ -545,8 +545,7 @@ public class ZPrinter
 
                     @Override
                     public void discoveryError(String s) {
-                        PrinterResponse response = new PrinterResponse(ErrorCode.PRINTER_ERROR, null, s);
-                        handler.post(() -> result.error(ErrorCode.PRINTER_ERROR.toString(), s, response.toMap()));
+                        System.out.println(s);
                     }
                 });
             } catch (ConnectionException e) {
@@ -577,11 +576,10 @@ public class ZPrinter
                             }
                         });
                     } catch (ConnectionException e) {
-                        onConnectionTimeOut(e);
+                        e.printStackTrace();
                     } catch (SettingsException e) {
                         e.printStackTrace();
                     }
-
                 }
 
                 @Override
@@ -592,8 +590,7 @@ public class ZPrinter
 
                 @Override
                 public void discoveryError(String s) {
-                    PrinterResponse response = new PrinterResponse(ErrorCode.PRINTER_ERROR, null, s);
-                    handler.post(() -> result.error(ErrorCode.PRINTER_ERROR.toString(), s, response.toMap()));
+                    System.out.println(s);
                 }
             });
             } catch (DiscoveryException e) {
