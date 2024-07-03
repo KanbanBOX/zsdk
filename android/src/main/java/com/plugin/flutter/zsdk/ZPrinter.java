@@ -30,6 +30,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -521,7 +522,7 @@ public class ZPrinter
                         System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
                         try {
                             final Map<String, String> settings = getAllSettings(discoveredPrinter.getConnection());
-                            final boolean supportsPdf = settings.get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                            final boolean supportsPdf = Objects.equals(settings.get(SGDParams.KEY_VIRTUAL_DEVICE), SGDParams.VALUE_PDF);
                             final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
                             handler.post(() -> {
                                 try {
@@ -567,7 +568,7 @@ public class ZPrinter
                     System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
                     try {
                         final Map<String, String> settings = getAllSettings(discoveredPrinter.getConnection());
-                        final boolean supportsPdf = settings.get(SGDParams.KEY_VIRTUAL_DEVICE).equals(SGDParams.VALUE_PDF);
+                        final boolean supportsPdf = Objects.equals(settings.get(SGDParams.KEY_VIRTUAL_DEVICE), SGDParams.VALUE_PDF);
                         final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
                         handler.post(() -> {
                             try {
