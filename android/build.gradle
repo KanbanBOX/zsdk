@@ -1,10 +1,23 @@
 group 'com.plugin.flutter.zsdk'
 version '1.0-SNAPSHOT'
 
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+//        jcenter() //JCenter will be removed on February 1, 2022.
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.2'
+    }
+}
+
 rootProject.allprojects {
     repositories {
         google()
         mavenCentral()
+//        jcenter() //JCenter will be removed on February 1, 2022.
     }
 }
 
