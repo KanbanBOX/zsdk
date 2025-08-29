@@ -53,7 +53,8 @@ class ZSDK {
   static const String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP =
       "printConfigurationLabelOverTCPIP";
   static const String _FIND_PRINTERS_OVER_TCP_IP = "findPrintersOverTCPIP";
-  static const String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetooth";
+  static const String _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY = "findPrintersOverBluetooth";
+  static const String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetoothNoLE";
   static const String _REBOOT_PRINTER_OVER_TCP_IP = "rebootPrinterOverBluetooth";
   static const String _PRINT_PDF_FILE_OVER_BLUETOOTH = "printPdfFileOverBluetooth";
   static const String _PRINT_PDF_DATA_OVER_BLUETOOTH = "printPdfDataOverBluetooth";
@@ -275,6 +276,8 @@ class ZSDK {
       }).timeout(
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
           onTimeout: () => _onTimeout(timeout: timeout));
+
+  Future findPrintersOverBluetoothLowEnergy() => _channel.invokeMethod(_FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY);
 
   Future findPrintersOverBluetooth() => _channel.invokeMethod(_FIND_PRINTERS_OVER_BLUETOOTH);
 

@@ -45,7 +45,7 @@ class _DiscoverPrintersState extends State<DiscoverPrinters>
 
                   return ListTile(
                     title: Text('Friendly name: ${printer.friendlyName}'),
-                    subtitle: Text('Address: ${printer.address}'),
+                    subtitle: Text('Address: ${printer.address} over ${printer.type.name}'),
                     onTap: () {
                       Navigator.pop(context, printer);
                     }
@@ -68,7 +68,12 @@ class _DiscoverPrintersState extends State<DiscoverPrinters>
       Navigator.pop(context, null);
       return;
     }
-    await _zebraLinkosSdkPlugin.findPrintersOverBluetooth();
+    await Future.wait(
+        [
+          _zebraLinkosSdkPlugin.findPrintersOverBluetooth(),
+          _zebraLinkosSdkPlugin.findPrintersOverBluetoothLowEnergy(),
+        ]
+    );
     if(mounted){
       setState(() {
         stillLookingForPrinters = false;

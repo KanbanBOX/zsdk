@@ -53,7 +53,8 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
   static final String _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH = "doManualCalibrationOverBluetooth";
   static final String _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH = "printConfigurationLabelOverBluetooth";
   static final String _REBOOT_PRINTER_OVER_BLUETOOTH = "rebootPrinterOverBluetooth";
-  static final String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetooth";
+  static final String _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY = "findPrintersOverBluetooth";
+  static final String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetoothNoLE";
 
   /** Properties */
   static final String _filePath = "filePath";
@@ -197,9 +198,10 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                   );
                   break;
               case _REBOOT_PRINTER_OVER_BLUETOOTH:
-                  printer.rebootPrinter(
-                      newBluetoothConnection(call)
-                  );
+                  printer.rebootPrinter(newBluetoothConnection(call));
+                  break;
+              case _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.findPrintersOverBluetoothLowEnergy();
                   break;
               case _FIND_PRINTERS_OVER_BLUETOOTH:
                   printer.findPrintersOverBluetooth();

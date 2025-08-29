@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-enum PrinterConnectionType { bluetooth, network }
+enum PrinterConnectionType { bluetooth, bluetooth_low_energy, network }
 
 class PrinterConnectionData {
   String address;

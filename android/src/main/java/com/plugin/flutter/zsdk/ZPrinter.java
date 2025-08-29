@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.zebra.sdk.btleComm.BluetoothLeDiscoverer;
+import com.zebra.sdk.btleComm.DiscoveredPrinterBluetoothLe;
 import com.zebra.sdk.comm.Connection;
 import com.zebra.sdk.comm.ConnectionException;
 import com.zebra.sdk.graphics.internal.ZebraImageAndroid;
@@ -12,7 +13,10 @@ import com.zebra.sdk.printer.SGD;
 import com.zebra.sdk.printer.ZebraPrinter;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
 import com.zebra.sdk.printer.ZebraPrinterLinkOs;
+import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
+import com.zebra.sdk.printer.discovery.DiscoveredPrinterBluetooth;
+import com.zebra.sdk.printer.discovery.DiscoveredPrinterNetwork;
 import com.zebra.sdk.printer.discovery.DiscoveryException;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
@@ -99,7 +103,6 @@ public class ZPrinter
 
                 try {
                     printer = ZebraPrinterFactory.getInstance(connection);
-//                    SGD.DO(SGDParams.KEY_MANUAL_CALIBRATION, null, connection);
                     printer.calibrate();
                     PrinterResponse response = new PrinterResponse(ErrorCode.SUCCESS,
                             getStatusInfo(printer), "Printer status");
@@ -277,7 +280,6 @@ public class ZPrinter
                         List<ImageData> list = PdfUtils.getImagesFromPdf(context, filePath, printerConf.getWidth(), printerConf.getHeight(), printerConf.getOrientation(), true);
                         for(int i = 0; i < list.size(); ++i) {
                             printer.printImage(new ZebraImageAndroid(list.get(i).bitmap), 0, 0, -1, -1, false);//Prints image directly from bitmap
-//                            printer.printImage(list.get(i).path, 0, 0);//Prints image from file path
                         }
                         PrinterResponse response = new PrinterResponse(ErrorCode.SUCCESS,
                                 getStatusInfo(printer), "Successful print");
@@ -348,8 +350,6 @@ public class ZPrinter
                             return;
                         }
                     }
-//                    connection.write(data.getBytes()); //This would be to send zpl as a string, this fails if the string is too big
-//                    printer.sendFileContents(filePath); //This would be to send zpl as a file path
                     FileUtilities.sendFileContentsInChunks(connection, dataStream); //This is the recommended way.
                     PrinterResponse response = new PrinterResponse(ErrorCode.SUCCESS,
                             getStatusInfo(printer), "Successful print");
@@ -513,45 +513,66 @@ public class ZPrinter
         return scale;
     }
 
-    public void findPrintersOverBluetooth() {
+    public void findPrintersOverBluetoothLowEnergy() {
 
         Thread findPrinters = new Thread(() -> {
             System.out.println("BluetoothLeDiscoverer: started");
             try {
-                BluetoothLeDiscoverer.findPrinters(context, new DiscoveryHandler() {
-                    @Override
-                    public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-                        System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
-                        try {
-                            final Map<String, String> settings = getAllSettings(discoveredPrinter.getConnection());
-                            final boolean supportsPdf = Objects.equals(settings.get(SGDParams.KEY_VIRTUAL_DEVICE), SGDParams.VALUE_PDF);
-                            final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
-                            handler.post(() -> {
-                                try {
-                                    printerFound(discoveredPrinter, true, supportsPdf, dpi);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            });
-                        } catch (ConnectionException e) {
-                            e.printStackTrace();
-                        } catch (SettingsException e) {
-                            e.printStackTrace();
+                BluetoothLeDiscoverer.findPrinters(
+                    context,
+                    new DiscoveryHandler() {
+                        @Override
+                        public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                            System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
+                            printerFound(discoveredPrinter);
                         }
 
-                    }
+                        @Override
+                        public void discoveryFinished() {
+                            System.out.println("BluetoothLeDiscoverer: discovery finished");
+                            handler.post(() -> result.success(null));
+                        }
 
-                    @Override
-                    public void discoveryFinished() {
-                        System.out.println("BluetoothLeDiscoverer: discovery finished");
-                        handler.post(() -> result.success(null));
+                        @Override
+                        public void discoveryError(String s) {
+                            System.out.println(s);
+                        }
                     }
+                );
+            } catch (ConnectionException e) {
+                onConnectionTimeOut(e);
+            }
+        });
 
-                    @Override
-                    public void discoveryError(String s) {
-                        System.out.println(s);
+        findPrinters.start();
+    }
+
+    public void findPrintersOverBluetooth() {
+
+        Thread findPrinters = new Thread(() -> {
+            System.out.println("BluetoothDiscoverer: started");
+            try {
+                BluetoothDiscoverer.findPrinters(
+                    context,
+                    new DiscoveryHandler() {
+                        @Override
+                        public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                            System.out.println("BluetoothDiscoverer: Found printer " + discoveredPrinter.address);
+                            printerFound(discoveredPrinter);
+                        }
+
+                        @Override
+                        public void discoveryFinished() {
+                            System.out.println("BluetoothLeDiscoverer: discovery finished");
+                            handler.post(() -> result.success(null));
+                        }
+
+                        @Override
+                        public void discoveryError(String s) {
+                            System.out.println(s);
+                        }
                     }
-                });
+                );
             } catch (ConnectionException e) {
                 onConnectionTimeOut(e);
             }
@@ -565,38 +586,26 @@ public class ZPrinter
         Thread findPrinters = new Thread(() -> {
             System.out.println("NetworkDiscoverer: started");
             try {
-                NetworkDiscoverer.findPrinters(new DiscoveryHandler() {
-                @Override
-                public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-                    System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
-                    try {
-                        final Map<String, String> settings = getAllSettings(discoveredPrinter.getConnection());
-                        final boolean supportsPdf = Objects.equals(settings.get(SGDParams.KEY_VIRTUAL_DEVICE), SGDParams.VALUE_PDF);
-                        final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
-                        handler.post(() -> {
-                            try {
-                                printerFound(discoveredPrinter, false, supportsPdf, dpi);
-                            } catch (Exception ignored) {
-                            }
-                        });
-                    } catch (ConnectionException e) {
-                        e.printStackTrace();
-                    } catch (SettingsException e) {
-                        e.printStackTrace();
+                NetworkDiscoverer.findPrinters(
+                    new DiscoveryHandler() {
+                        @Override
+                        public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                            System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
+                            printerFound(discoveredPrinter);
+                        }
+
+                        @Override
+                        public void discoveryFinished() {
+                            System.out.println("NetworkDiscoverer: discovery finished");
+                            handler.post(() -> result.success(null));
+                        }
+
+                        @Override
+                        public void discoveryError(String s) {
+                            System.out.println(s);
+                        }
                     }
-                }
-
-                @Override
-                public void discoveryFinished() {
-                    System.out.println("NetworkDiscoverer: discovery finished");
-                    handler.post(() -> result.success(null));
-                }
-
-                @Override
-                public void discoveryError(String s) {
-                    System.out.println(s);
-                }
-            });
+                );
             } catch (DiscoveryException e) {
                 e.printStackTrace();
             }
@@ -605,19 +614,32 @@ public class ZPrinter
         findPrinters.start();
     }
 
-    private void printerFound(DiscoveredPrinter printer, boolean isBluetooth, boolean supportsPdf, String dpi) throws Exception {
-        HashMap<String, String> args = new HashMap<>();
-        System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
-        args.put("address", printer.address);
-        if(isBluetooth) {
-            args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
-        } else {
-            args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
-        }
-        args.put("type", isBluetooth ? "bluetooth" : "network");
-        args.put("supportsPDF", supportsPdf ? "true" : "false");
-        args.put("dpi", dpi);
+    private void printerFound(DiscoveredPrinter printer) {
+        try {
+            final Map<String, String> settings = getAllSettings(printer.getConnection());
+            final boolean supportsPdf = Objects.equals(settings.get(SGDParams.KEY_VIRTUAL_DEVICE), SGDParams.VALUE_PDF);
+            final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
 
-        channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
+            HashMap<String, String> args = new HashMap<>();
+            System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
+            args.put("address", printer.address);
+
+            if (printer instanceof DiscoveredPrinterBluetooth) {
+                args.put("type", "bluetooth");
+                args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
+            } else if (printer instanceof DiscoveredPrinterBluetoothLe) {
+                args.put("type", "bluetooth_low_energy");
+                args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
+            } else if (printer instanceof DiscoveredPrinterNetwork) {
+                args.put("type", "network");
+                args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
+            }
+            args.put("supportsPDF", supportsPdf ? "true" : "false");
+            args.put("dpi", dpi);
+
+            channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
