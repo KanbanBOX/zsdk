@@ -2,6 +2,7 @@ package com.plugin.flutter.zsdk;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 
 import com.zebra.sdk.btleComm.BluetoothLeDiscoverer;
 import com.zebra.sdk.btleComm.DiscoveredPrinterBluetoothLe;
@@ -17,7 +18,6 @@ import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinterBluetooth;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinterNetwork;
-import com.zebra.sdk.printer.discovery.DiscoveryException;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
 import com.zebra.sdk.settings.SettingsException;
@@ -514,104 +514,99 @@ public class ZPrinter
     }
 
     public void findPrintersOverBluetoothLowEnergy() {
-
-        Thread findPrinters = new Thread(() -> {
-            System.out.println("BluetoothLeDiscoverer: started");
+        System.out.println("BluetoothLeDiscoverer: started");
+        new Thread(() -> {
+            Looper.prepare();
             try {
                 BluetoothLeDiscoverer.findPrinters(
-                    context,
-                    new DiscoveryHandler() {
-                        @Override
-                        public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-                            System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
-                            printerFound(discoveredPrinter);
-                        }
+                        context,
+                        new DiscoveryHandler() {
+                            @Override
+                            public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                                System.out.println("BluetoothLeDiscoverer: Found printer " + discoveredPrinter.address);
+                                printerFound(discoveredPrinter);
+                            }
 
-                        @Override
-                        public void discoveryFinished() {
-                            System.out.println("BluetoothLeDiscoverer: discovery finished");
-                            handler.post(() -> result.success(null));
-                        }
+                            @Override
+                            public void discoveryFinished() {
+                                System.out.println("BluetoothLeDiscoverer: discovery finished");
+                                handler.post(() -> result.success(null));
+                            }
 
-                        @Override
-                        public void discoveryError(String s) {
-                            System.out.println(s);
+                            @Override
+                            public void discoveryError(String s) {
+                                System.out.println(s);
+                            }
                         }
-                    }
                 );
-            } catch (ConnectionException e) {
-                onConnectionTimeOut(e);
+            } finally {
+                Looper.myLooper().quit();
             }
-        });
-
-        findPrinters.start();
+        }).start();
     }
 
     public void findPrintersOverBluetooth() {
-
-        Thread findPrinters = new Thread(() -> {
-            System.out.println("BluetoothDiscoverer: started");
+        System.out.println("BluetoothDiscoverer: started");
+        new Thread(() -> {
+            Looper.prepare();
             try {
                 BluetoothDiscoverer.findPrinters(
-                    context,
-                    new DiscoveryHandler() {
-                        @Override
-                        public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-                            System.out.println("BluetoothDiscoverer: Found printer " + discoveredPrinter.address);
-                            printerFound(discoveredPrinter);
-                        }
+                        context,
+                        new DiscoveryHandler() {
+                            @Override
+                            public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                                System.out.println("BluetoothDiscoverer: Found printer " + discoveredPrinter.address);
+                                printerFound(discoveredPrinter);
+                            }
 
-                        @Override
-                        public void discoveryFinished() {
-                            System.out.println("BluetoothLeDiscoverer: discovery finished");
-                            handler.post(() -> result.success(null));
-                        }
+                            @Override
+                            public void discoveryFinished() {
+                                System.out.println("BluetoothDiscoverer: discovery finished");
+                                handler.post(() -> result.success(null));
+                            }
 
-                        @Override
-                        public void discoveryError(String s) {
-                            System.out.println(s);
+                            @Override
+                            public void discoveryError(String s) {
+                                System.out.println(s);
+                            }
                         }
-                    }
                 );
-            } catch (ConnectionException e) {
-                onConnectionTimeOut(e);
+            } finally {
+                Looper.myLooper().quit();
             }
-        });
-
-        findPrinters.start();
+        }).start();
     }
 
     public void findPrintersOverTCPIP() {
-
-        Thread findPrinters = new Thread(() -> {
-            System.out.println("NetworkDiscoverer: started");
+        System.out.println("NetworkDiscoverer: started");
+        new Thread(() -> {
+            Looper.prepare();
             try {
                 NetworkDiscoverer.findPrinters(
-                    new DiscoveryHandler() {
-                        @Override
-                        public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
-                            System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
-                            printerFound(discoveredPrinter);
-                        }
+                        context,
+                        new DiscoveryHandler() {
+                            @Override
+                            public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
+                                System.out.println("NetworkDiscoverer: Found printer " + discoveredPrinter.address);
+                                printerFound(discoveredPrinter);
+                            }
 
-                        @Override
-                        public void discoveryFinished() {
-                            System.out.println("NetworkDiscoverer: discovery finished");
-                            handler.post(() -> result.success(null));
-                        }
+                            @Override
+                            public void discoveryFinished() {
+                                System.out.println("NetworkDiscoverer: discovery finished");
+                                handler.post(() -> result.success(null));
+                            }
 
-                        @Override
-                        public void discoveryError(String s) {
-                            System.out.println(s);
+                            @Override
+                            public void discoveryError(String s) {
+                                System.out.println(s);
+                            }
                         }
-                    }
                 );
-            } catch (DiscoveryException e) {
-                e.printStackTrace();
+            } finally {
+                Looper.myLooper().quit();
             }
-        });
-
-        findPrinters.start();
+        }).start();
     }
 
     private void printerFound(DiscoveredPrinter printer) {
