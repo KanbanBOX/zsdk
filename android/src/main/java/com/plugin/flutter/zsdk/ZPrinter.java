@@ -527,7 +527,8 @@ public class ZPrinter
                             handler.post(() -> {
                                 try {
                                     printerFound(discoveredPrinter, true, supportsPdf, dpi);
-                                } catch (Exception ignored) {
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                             });
                         } catch (ConnectionException e) {

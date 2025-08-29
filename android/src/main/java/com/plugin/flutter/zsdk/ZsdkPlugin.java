@@ -1,21 +1,15 @@
 package com.plugin.flutter.zsdk;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-
 import androidx.annotation.NonNull;
-
-import com.zebra.sdk.btleComm.BluetoothLeConnection;
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.TcpConnection;
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** ZsdkPlugin */
 public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
@@ -31,17 +25,6 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     if(channel != null) channel.setMethodCallHandler(null);
-  }
-
-  // This static method is only to remain compatible with apps that don’t use the v2 Android embedding.
-  @Deprecated()
-  @SuppressLint("Registrar")
-  public static void registerWith(Registrar registrar)
-  {
-    new ZsdkPlugin().init(
-        registrar.context(),
-        registrar.messenger()
-    );
   }
 
   /** Channel */

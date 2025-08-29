@@ -3,6 +3,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:zsdk/zsdk.dart';
 
 class DiscoverPrinters extends StatefulWidget {
+  const DiscoverPrinters({super.key});
+
   @override
   State<StatefulWidget> createState() => _DiscoverPrintersState();
 }
