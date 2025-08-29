@@ -18,6 +18,7 @@ import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinterBluetooth;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinterNetwork;
+import com.zebra.sdk.printer.discovery.DiscoveryException;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
 import com.zebra.sdk.settings.SettingsException;
@@ -539,6 +540,8 @@ public class ZPrinter
                             }
                         }
                 );
+            } catch(ConnectionException e) {
+                e.printStackTrace();
             } finally {
                 Looper.myLooper().quit();
             }
@@ -571,6 +574,9 @@ public class ZPrinter
                             }
                         }
                 );
+            }
+            catch(ConnectionException e) {
+                e.printStackTrace();
             } finally {
                 Looper.myLooper().quit();
             }
@@ -602,6 +608,8 @@ public class ZPrinter
                             }
                         }
                 );
+            } catch(DiscoveryException e) {
+                e.printStackTrace();
             } finally {
                 Looper.myLooper().quit();
             }
