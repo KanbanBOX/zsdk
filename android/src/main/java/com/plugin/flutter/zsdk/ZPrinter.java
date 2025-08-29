@@ -442,6 +442,8 @@ public class ZPrinter
         if(connection == null) return new HashMap<>();
         if(!connection.isConnected()) connection.open();
         ZebraPrinterLinkOs printerLinkOs = ZebraPrinterFactory.getLinkOsPrinter(connection);
+        if(printerLinkOs == null) throw new SettingsException("ZebraPrinterFactory.getLinkOsPrinter failed, probably the connection failed");
+
         return printerLinkOs.getAllSettingValues();
     }
 
