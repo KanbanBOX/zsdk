@@ -583,7 +583,6 @@ public class ZPrinter
             Looper.prepare();
             try {
                 NetworkDiscoverer.findPrinters(
-                        context,
                         new DiscoveryHandler() {
                             @Override
                             public void foundPrinter(DiscoveredPrinter discoveredPrinter) {
