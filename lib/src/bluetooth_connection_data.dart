@@ -6,7 +6,7 @@ class PrinterConnectionData {
   String address;
   String? friendlyName;
   PrinterConnectionType type;
-  bool supportsPDF;
+  bool? supportsPDF;
   String? dpi;
 
   PrinterConnectionData(
@@ -23,8 +23,14 @@ class PrinterConnectionData {
       decoded['address'],
       decoded['friendlyName'],
       PrinterConnectionType.values.byName(decoded['type'] as String),
-      decoded['supportsPDF'] == 'true',
-      decoded['dpi']
+      (){
+        switch(decoded['supportsPDF'] ?? null) {
+          case 'true': return true;
+          case 'false': return false;
+          case null: return null;
+        }
+      }(),
+      decoded['dpi'] ?? null
     );
   }
 
@@ -33,7 +39,13 @@ class PrinterConnectionData {
       'address': address,
       'friendlyName': friendlyName,
       'type': type.name,
-      'supportsPDF': supportsPDF ? 'true' : 'false',
+      'supportsPDF': (){
+        switch(supportsPDF) {
+          case true: return 'true';
+          case false: return 'false';
+          case null: return null;
+        }
+      }(),
       'dpi': dpi
     });
   }

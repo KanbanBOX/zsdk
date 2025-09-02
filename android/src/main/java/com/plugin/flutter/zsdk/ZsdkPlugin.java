@@ -2,6 +2,8 @@ package com.plugin.flutter.zsdk;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+
+import com.zebra.sdk.btleComm.BluetoothLeConnection;
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.TcpConnection;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -44,17 +46,27 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
   static final String _FIND_PRINTERS_OVER_TCP_IP = "findPrintersOverTCPIP";
 
   static final String _PRINT_PDF_FILE_OVER_BLUETOOTH = "printPdfFileOverBluetooth";
+  static final String _PRINT_PDF_FILE_OVER_BLUETOOTH_LOW_ENERGY = "printPdfFileOverBluetoothLowEnergy";
   static final String _PRINT_PDF_DATA_OVER_BLUETOOTH = "printPdfDataOverBluetooth";
+  static final String _PRINT_PDF_DATA_OVER_BLUETOOTH_LOW_ENERGY = "printPdfDataOverBluetoothLowEnergy";
   static final String _PRINT_ZPL_FILE_OVER_BLUETOOTH = "printZplFileOverBluetooth";
+  static final String _PRINT_ZPL_FILE_OVER_BLUETOOTH_LOW_ENERGY = "printZplFileOverBluetoothLowEnergy";
   static final String _PRINT_ZPL_DATA_OVER_BLUETOOTH = "printZplDataOverBluetooth";
+  static final String _PRINT_ZPL_DATA_OVER_BLUETOOTH_LOW_ENERGY = "printZplDataOverBluetoothLowEnergy";
   static final String _CHECK_PRINTER_STATUS_OVER_BLUETOOTH = "checkPrinterStatusOverBluetooth";
+  static final String _CHECK_PRINTER_STATUS_OVER_BLUETOOTH_LOW_ENERGY = "checkPrinterStatusOverBluetoothLowEnergy";
+  static final String _GET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY = "getPrinterSettingsOverBluetoothLowEnergy";
   static final String _GET_PRINTER_SETTINGS_OVER_BLUETOOTH = "getPrinterSettingsOverBluetooth";
   static final String _SET_PRINTER_SETTINGS_OVER_BLUETOOTH = "setPrinterSettingsOverBluetooth";
+  static final String _SET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY = "setPrinterSettingsOverBluetoothLowEnergy";
   static final String _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH = "doManualCalibrationOverBluetooth";
+  static final String _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH_LOW_ENERGY = "doManualCalibrationOverBluetoothLowEnergy";
   static final String _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH = "printConfigurationLabelOverBluetooth";
+  static final String _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH_LOW_ENERGY = "printConfigurationLabelOverBluetoothLowEnergy";
   static final String _REBOOT_PRINTER_OVER_BLUETOOTH = "rebootPrinterOverBluetooth";
-  static final String _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY = "findPrintersOverBluetooth";
-  static final String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetoothNoLE";
+  static final String _REBOOT_PRINTER_OVER_BLUETOOTH_LOW_ENERGY = "rebootPrinterOverBluetoothLowEnergy";
+  static final String _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY = "findPrintersOverBluetoothLowEnergy";
+  static final String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetooth";
 
   /** Properties */
   static final String _filePath = "filePath";
@@ -163,9 +175,24 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                       newBluetoothConnection(call)
                   );
                   break;
+              case _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.doManualCalibration(
+                      newBluetoothLowEnergyConnection(call)
+                  );
+                  break;
+              case _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.printConfigurationLabel(
+                      newBluetoothLowEnergyConnection(call)
+                  );
+                  break;
               case _CHECK_PRINTER_STATUS_OVER_BLUETOOTH:
                   printer.checkPrinterStatus(
                       newBluetoothConnection(call)
+                  );
+                  break;
+              case _CHECK_PRINTER_STATUS_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.checkPrinterStatus(
+                      newBluetoothLowEnergyConnection(call)
                   );
                   break;
               case _GET_PRINTER_SETTINGS_OVER_BLUETOOTH:
@@ -173,9 +200,20 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                       newBluetoothConnection(call)
                   );
                   break;
+              case _GET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.getPrinterSettings(
+                      newBluetoothLowEnergyConnection(call)
+                  );
+                  break;
               case _SET_PRINTER_SETTINGS_OVER_BLUETOOTH:
                   printer.setPrinterSettings(
                       newBluetoothConnection(call),
+                      new PrinterSettings(call.arguments())
+                  );
+                  break;
+              case _SET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.setPrinterSettings(
+                      newBluetoothLowEnergyConnection(call),
                       new PrinterSettings(call.arguments())
                   );
                   break;
@@ -185,10 +223,22 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                       newBluetoothConnection(call)
                   );
                   break;
+              case _PRINT_PDF_FILE_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.printPdfFile(
+                      call.argument(_filePath),
+                      newBluetoothLowEnergyConnection(call)
+                  );
+                  break;
               case _PRINT_ZPL_FILE_OVER_BLUETOOTH:
                   printer.printZplFile(
                       call.argument(_filePath),
                       newBluetoothConnection(call)
+                  );
+                  break;
+              case _PRINT_ZPL_FILE_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.printZplFile(
+                      call.argument(_filePath),
+                      newBluetoothLowEnergyConnection(call)
                   );
                   break;
               case _PRINT_ZPL_DATA_OVER_BLUETOOTH:
@@ -197,8 +247,17 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                       newBluetoothConnection(call)
                   );
                   break;
+              case _PRINT_ZPL_DATA_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.printZplData(
+                      call.argument(_data),
+                      newBluetoothLowEnergyConnection(call)
+                  );
+                  break;
               case _REBOOT_PRINTER_OVER_BLUETOOTH:
                   printer.rebootPrinter(newBluetoothConnection(call));
+                  break;
+              case _REBOOT_PRINTER_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.rebootPrinter(newBluetoothLowEnergyConnection(call));
                   break;
               case _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY:
                   printer.findPrintersOverBluetoothLowEnergy();
@@ -210,6 +269,12 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
                   printer.printPdfData(
                       call.argument(_data),
                       newBluetoothConnection(call)
+                  );
+                  break;
+              case _PRINT_PDF_DATA_OVER_BLUETOOTH_LOW_ENERGY:
+                  printer.printPdfData(
+                      call.argument(_data),
+                      newBluetoothLowEnergyConnection(call)
                   );
                   break;
               default:
@@ -235,5 +300,11 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
         String address = call.argument(_address);
 
         return new BluetoothConnection(address);
+    }
+
+    public BluetoothLeConnection newBluetoothLowEnergyConnection(@NonNull MethodCall call) {
+        String address = call.argument(_address);
+
+        return new BluetoothLeConnection(address, context);
     }
 }

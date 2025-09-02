@@ -42,34 +42,34 @@ class ZSDK {
   static const String _PRINT_PDF_DATA_OVER_TCP_IP = "printPdfDataOverTCPIP";
   static const String _PRINT_ZPL_FILE_OVER_TCP_IP = "printZplFileOverTCPIP";
   static const String _PRINT_ZPL_DATA_OVER_TCP_IP = "printZplDataOverTCPIP";
-  static const String _CHECK_PRINTER_STATUS_OVER_TCP_IP =
-      "checkPrinterStatusOverTCPIP";
-  static const String _GET_PRINTER_SETTINGS_OVER_TCP_IP =
-      "getPrinterSettingsOverTCPIP";
-  static const String _SET_PRINTER_SETTINGS_OVER_TCP_IP =
-      "setPrinterSettingsOverTCPIP";
-  static const String _DO_MANUAL_CALIBRATION_OVER_TCP_IP =
-      "doManualCalibrationOverTCPIP";
-  static const String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP =
-      "printConfigurationLabelOverTCPIP";
+  static const String _CHECK_PRINTER_STATUS_OVER_TCP_IP = "checkPrinterStatusOverTCPIP";
+  static const String _GET_PRINTER_SETTINGS_OVER_TCP_IP = "getPrinterSettingsOverTCPIP";
+  static const String _SET_PRINTER_SETTINGS_OVER_TCP_IP = "setPrinterSettingsOverTCPIP";
+  static const String _DO_MANUAL_CALIBRATION_OVER_TCP_IP = "doManualCalibrationOverTCPIP";
+  static const String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP = "printConfigurationLabelOverTCPIP";
   static const String _FIND_PRINTERS_OVER_TCP_IP = "findPrintersOverTCPIP";
-  static const String _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY = "findPrintersOverBluetooth";
-  static const String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetoothNoLE";
   static const String _REBOOT_PRINTER_OVER_TCP_IP = "rebootPrinterOverBluetooth";
+  static const String _FIND_PRINTERS_OVER_BLUETOOTH_LOW_ENERGY = "findPrintersOverBluetoothLowEnergy";
+  static const String _PRINT_PDF_FILE_OVER_BLUETOOTH_LOW_ENERGY = "printPdfFileOverBluetoothLowEnergy";
+  static const String _PRINT_PDF_DATA_OVER_BLUETOOTH_LOW_ENERGY = "printPdfDataOverBluetoothLowEnergy";
+  static const String _PRINT_ZPL_FILE_OVER_BLUETOOTH_LOW_ENERGY = "printZplFileOverBluetoothLowEnergy";
+  static const String _PRINT_ZPL_DATA_OVER_BLUETOOTH_LOW_ENERGY = "printZplDataOverBluetoothLowEnergy";
+  static const String _CHECK_PRINTER_STATUS_OVER_BLUETOOTH_LOW_ENERGY = "checkPrinterStatusOverBluetoothLowEnergy";
+  static const String _GET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY = "getPrinterSettingsOverBluetoothLowEnergy";
+  static const String _SET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY = "setPrinterSettingsOverBluetoothLowEnergy";
+  static const String _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH_LOW_ENERGY = "doManualCalibrationOverBluetoothLowEnergy";
+  static const String _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH_LOW_ENERGY = "printConfigurationLabelOverBluetoothLowEnergy";
+  static const String _REBOOT_PRINTER_OVER_BLUETOOTH_LOW_ENERGY = "rebootPrinterOverBluetoothLowEnergy";
+  static const String _FIND_PRINTERS_OVER_BLUETOOTH = "findPrintersOverBluetooth";
   static const String _PRINT_PDF_FILE_OVER_BLUETOOTH = "printPdfFileOverBluetooth";
   static const String _PRINT_PDF_DATA_OVER_BLUETOOTH = "printPdfDataOverBluetooth";
   static const String _PRINT_ZPL_FILE_OVER_BLUETOOTH = "printZplFileOverBluetooth";
   static const String _PRINT_ZPL_DATA_OVER_BLUETOOTH = "printZplDataOverBluetooth";
-  static const String _CHECK_PRINTER_STATUS_OVER_BLUETOOTH =
-      "checkPrinterStatusOverBluetooth";
-  static const String _GET_PRINTER_SETTINGS_OVER_BLUETOOTH =
-      "getPrinterSettingsOverBluetooth";
-  static const String _SET_PRINTER_SETTINGS_OVER_BLUETOOTH =
-      "setPrinterSettingsOverBluetooth";
-  static const String _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH =
-      "doManualCalibrationOverBluetooth";
-  static const String _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH =
-      "printConfigurationLabelOverBluetooth";
+  static const String _CHECK_PRINTER_STATUS_OVER_BLUETOOTH = "checkPrinterStatusOverBluetooth";
+  static const String _GET_PRINTER_SETTINGS_OVER_BLUETOOTH = "getPrinterSettingsOverBluetooth";
+  static const String _SET_PRINTER_SETTINGS_OVER_BLUETOOTH = "setPrinterSettingsOverBluetooth";
+  static const String _DO_MANUAL_CALIBRATION_OVER_BLUETOOTH = "doManualCalibrationOverBluetooth";
+  static const String _PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH = "printConfigurationLabelOverBluetooth";
   static const String _REBOOT_PRINTER_OVER_BLUETOOTH = "rebootPrinterOverBluetooth";
 
   /// Properties
@@ -291,9 +291,25 @@ class ZSDK {
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
           onTimeout: () => _onTimeout(timeout: timeout));
 
+  Future doManualCalibrationOverBluetoothLowEnergy(
+          {required String address, Duration? timeout}) =>
+      _channel.invokeMethod(_DO_MANUAL_CALIBRATION_OVER_BLUETOOTH_LOW_ENERGY, {
+        _address: address,
+      }).timeout(
+          timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
+          onTimeout: () => _onTimeout(timeout: timeout));
+
   Future printConfigurationLabelOverBluetooth(
           {required String address, Duration? timeout}) =>
       _channel.invokeMethod(_PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH, {
+        _address: address,
+      }).timeout(
+          timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
+          onTimeout: () => _onTimeout(timeout: timeout));
+
+  Future printConfigurationLabelOverBluetoothLowEnergy(
+          {required String address, Duration? timeout}) =>
+      _channel.invokeMethod(_PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH_LOW_ENERGY, {
         _address: address,
       }).timeout(
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
@@ -307,9 +323,25 @@ class ZSDK {
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
           onTimeout: () => _onTimeout(timeout: timeout));
 
+  Future rebootPrinterOverBluetoothLowEnergy(
+          {required String address, Duration? timeout}) =>
+      _channel.invokeMethod(_REBOOT_PRINTER_OVER_BLUETOOTH_LOW_ENERGY, {
+        _address: address,
+      }).timeout(
+          timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
+          onTimeout: () => _onTimeout(timeout: timeout));
+
   Future checkPrinterStatusOverBluetooth(
           {required String address, Duration? timeout}) =>
       _channel.invokeMethod(_CHECK_PRINTER_STATUS_OVER_BLUETOOTH, {
+        _address: address,
+      }).timeout(
+          timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
+          onTimeout: () => _onTimeout(timeout: timeout));
+
+  Future checkPrinterStatusOverBluetoothLowEnergy(
+          {required String address, Duration? timeout}) =>
+      _channel.invokeMethod(_CHECK_PRINTER_STATUS_OVER_BLUETOOTH_LOW_ENERGY, {
         _address: address,
       }).timeout(
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
@@ -323,6 +355,14 @@ class ZSDK {
           timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
           onTimeout: () => _onTimeout(timeout: timeout));
 
+  Future getPrinterSettingsOverBluetoothLowEnergy(
+          {required String address, Duration? timeout}) =>
+      _channel.invokeMethod(_GET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY, {
+        _address: address,
+      }).timeout(
+          timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
+          onTimeout: () => _onTimeout(timeout: timeout));
+
   Future setPrinterSettingsOverBluetooth(
           {required PrinterSettings settings,
           required String address,
@@ -330,6 +370,20 @@ class ZSDK {
       _channel
           .invokeMethod(
               _SET_PRINTER_SETTINGS_OVER_BLUETOOTH,
+              settings.toMap()..addAll({
+                _address: address,
+              }))
+          .timeout(
+              timeout ??= const Duration(seconds: DEFAULT_CONNECTION_TIMEOUT),
+              onTimeout: () => _onTimeout(timeout: timeout));
+
+  Future setPrinterSettingsOverBluetoothLowEnergy(
+          {required PrinterSettings settings,
+          required String address,
+          Duration? timeout}) =>
+      _channel
+          .invokeMethod(
+              _SET_PRINTER_SETTINGS_OVER_BLUETOOTH_LOW_ENERGY,
               settings.toMap()..addAll({
                 _address: address,
               }))
@@ -356,6 +410,18 @@ class ZSDK {
           printerConf: printerConf,
           timeout: timeout);
 
+  Future printPdfFileOverBluetoothLowEnergy(
+          {required String filePath,
+          required String address,
+          PrinterConf? printerConf,
+          Duration? timeout}) =>
+      _printFileOverBluetooth(
+          method: _PRINT_PDF_FILE_OVER_BLUETOOTH_LOW_ENERGY,
+          filePath: filePath,
+          address: address,
+          printerConf: printerConf,
+          timeout: timeout);
+
   Future printZplFileOverBluetooth(
           {required String filePath,
           required String address,
@@ -363,6 +429,18 @@ class ZSDK {
           Duration? timeout}) =>
       _printFileOverBluetooth(
           method: _PRINT_ZPL_FILE_OVER_BLUETOOTH,
+          filePath: filePath,
+          address: address,
+          printerConf: printerConf,
+          timeout: timeout);
+
+  Future printZplFileOverBluetoothLowEnergy(
+          {required String filePath,
+          required String address,
+          PrinterConf? printerConf,
+          Duration? timeout}) =>
+      _printFileOverBluetooth(
+          method: _PRINT_ZPL_FILE_OVER_BLUETOOTH_LOW_ENERGY,
           filePath: filePath,
           address: address,
           printerConf: printerConf,
@@ -397,6 +475,18 @@ class ZSDK {
           printerConf: printerConf,
           timeout: timeout);
 
+  Future printPdfDataOverBluetoothLowEnergy(
+          {required Uint8List data,
+          required String address,
+          PrinterConf? printerConf,
+          Duration? timeout}) =>
+      _printPdfDataOverBluetooth(
+          method: _PRINT_PDF_DATA_OVER_BLUETOOTH_LOW_ENERGY,
+          data: data,
+          address: address,
+          printerConf: printerConf,
+          timeout: timeout);
+
   Future printZplDataOverBluetooth(
           {required String data,
           required String address,
@@ -404,6 +494,18 @@ class ZSDK {
           Duration? timeout}) =>
       _printPdfDataOverBluetooth(
           method: _PRINT_ZPL_DATA_OVER_BLUETOOTH,
+          data: data,
+          address: address,
+          printerConf: printerConf,
+          timeout: timeout);
+
+  Future printZplDataOverBluetoothLowEnergy(
+          {required String data,
+          required String address,
+          PrinterConf? printerConf,
+          Duration? timeout}) =>
+      _printPdfDataOverBluetooth(
+          method: _PRINT_ZPL_DATA_OVER_BLUETOOTH_LOW_ENERGY,
           data: data,
           address: address,
           printerConf: printerConf,

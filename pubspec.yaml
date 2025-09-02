@@ -1,6 +1,6 @@
 name: zsdk
 description: A Flutter plugin for printers using Zebra Link OS, to allow ZPL and PDF priting over TCP/IP and Bluetooth connections.
-version: 4.0.0
+version: 4.0.3
 homepage: https://github.com/luis901101/zsdk
 issue_tracker: https://github.com/luis901101/zsdk/issues
 topics:
