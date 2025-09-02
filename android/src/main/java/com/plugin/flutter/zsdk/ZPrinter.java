@@ -21,6 +21,7 @@ import com.zebra.sdk.printer.discovery.DiscoveredPrinterNetwork;
 import com.zebra.sdk.printer.discovery.DiscoveryException;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
+import com.zebra.sdk.settings.Setting;
 import com.zebra.sdk.settings.SettingsException;
 import com.zebra.sdk.util.internal.FileUtilities;
 
@@ -182,8 +183,7 @@ public class ZPrinter
     public void getPrinterSettings(final Connection connection) {
         new Thread(() -> {
             ZebraPrinter printer = null;
-            try
-            {
+            try {
                 connection.open();
 
                 try {
@@ -195,13 +195,9 @@ public class ZPrinter
                 } finally {
                     connection.close();
                 }
-            }
-            catch(ConnectionException e)
-            {
+            } catch (ConnectionException e) {
                 onConnectionTimeOut(e);
-            }
-            catch(Exception e)
-            {
+            } catch (Exception e) {
                 onException(e, printer);
             }
         }).start();
@@ -617,31 +613,21 @@ public class ZPrinter
     }
 
     private void printerFound(DiscoveredPrinter printer) {
-        try {
-            final Map<String, String> settings = getAllSettings(printer.getConnection());
-            final boolean supportsPdf = Objects.equals(settings.get(SGDParams.KEY_VIRTUAL_DEVICE), SGDParams.VALUE_PDF);
-            final String dpi = settings.get(SGDParams.KEY_PRINTER_DPI);
+        HashMap<String, String> args = new HashMap<>();
+        System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
+        args.put("address", printer.address);
 
-            HashMap<String, String> args = new HashMap<>();
-            System.out.println("Discovered printer data: " + printer.getDiscoveryDataMap().toString());
-            args.put("address", printer.address);
-
-            if (printer instanceof DiscoveredPrinterBluetooth) {
-                args.put("type", "bluetooth");
-                args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
-            } else if (printer instanceof DiscoveredPrinterBluetoothLe) {
-                args.put("type", "bluetooth_low_energy");
-                args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
-            } else if (printer instanceof DiscoveredPrinterNetwork) {
-                args.put("type", "network");
-                args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
-            }
-            args.put("supportsPDF", supportsPdf ? "true" : "false");
-            args.put("dpi", dpi);
-
-            channel.invokeMethod("printerFound", (new JSONObject(args)).toString());
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (printer instanceof DiscoveredPrinterBluetooth) {
+            args.put("type", "bluetooth");
+            args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
+        } else if (printer instanceof DiscoveredPrinterBluetoothLe) {
+            args.put("type", "bluetooth_low_energy");
+            args.put("friendlyName", printer.getDiscoveryDataMap().get("FRIENDLY_NAME"));
+        } else if (printer instanceof DiscoveredPrinterNetwork) {
+            args.put("type", "network");
+            args.put("friendlyName", printer.getDiscoveryDataMap().get("SYSTEM_NAME"));
         }
+
+        handler.post(() -> channel.invokeMethod("printerFound", (new JSONObject(args)).toString()));
     }
 }
