@@ -22,7 +22,8 @@ const String btnPrintConfigurationLabel = 'btnPrintConfigurationLabel';
 const String btnRebootPrinter = 'btnRebootPrinter';
 
 const String btnGetBondedDevices = 'btnGetBondedDevices';
-const String btnDiscoverPrinters = 'btnDiscoverPrinters';
+const String btnDiscoverBluetoothPrinters = 'btnDiscoverBTPrinters';
+const String btnDiscoverTCPIPPrinters = 'btnDiscoverTCPIPPrinters';
 const String btnPrintZplDataOverBluetooth = 'btnPrintZplDataOverBluetooth';
 
 class MyApp extends StatefulWidget {
@@ -41,6 +42,7 @@ class _MyAppState extends State<MyApp> {
   final addressPortController = TextEditingController();
   final btMacAddressController = TextEditingController();
   List<Map<String, String>> bondedDevices = [];
+  List<Map<String, String>> foundTcpIpPrinters = [];
   final pathController = TextEditingController();
   final zplDataController = TextEditingController(
     text: '^XA^FO17,16^GB379,371,8^FS^FT65,255^A0N,135,134^FDTEST^FS^XZ',
@@ -79,6 +81,8 @@ class _MyAppState extends State<MyApp> {
   OperationStatus calibrationStatus = OperationStatus.NONE;
   OperationStatus rebootingStatus = OperationStatus.NONE;
   OperationStatus btStatus = OperationStatus.NONE;
+  OperationStatus printersTcpIpDiscovery = OperationStatus.NONE;
+  String? foundTcpIpPrintersMessage;
   String? btMessage;
   String? filePath;
   String? zplData;
@@ -298,6 +302,60 @@ class _MyAppState extends State<MyApp> {
                           'Printer address',
                           style: TextStyle(fontSize: 16),
                         ),
+                        Visibility(
+                          visible: printersTcpIpDiscovery != OperationStatus.NONE,
+                          child: Column(
+                            children: <Widget>[
+                              Text(
+                                foundTcpIpPrintersMessage ?? '',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: getOperationStatusColor(printersTcpIpDiscovery),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                        if (foundTcpIpPrinters.isNotEmpty)
+                          DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: 'Select TCP-IP printer',
+                            ),
+                            items: foundTcpIpPrinters
+                                .map(
+                                  (d) => DropdownMenuItem(
+                                value: d['address'],
+                                child: Text(
+                                  "${d['name']} (${d['address']})",
+                                ),
+                              ),
+                            )
+                                .toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  addressIpController.text = value;
+                                });
+                              }
+                            },
+                          ),
+                        ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepOrange,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: printersTcpIpDiscovery == OperationStatus.RECEIVING
+                                ? null
+                                : () => onClick(btnDiscoverTCPIPPrinters),
+                            child: Text(
+                              'Discover TCP-IP Printers',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+
                         TextField(
                           controller: addressIpController,
                           decoration: const InputDecoration(
@@ -1045,7 +1103,7 @@ class _MyAppState extends State<MyApp> {
                                 ),
                                 onPressed: btStatus == OperationStatus.RECEIVING
                                     ? null
-                                    : () => onClick(btnDiscoverPrinters),
+                                    : () => onClick(btnDiscoverBluetoothPrinters),
                                 child: Text(
                                   "${"Scan".toUpperCase()}\nOnly on Android",
                                   textAlign: TextAlign.center,
@@ -1711,7 +1769,7 @@ class _MyAppState extends State<MyApp> {
             },
           );
           break;
-        case btnDiscoverPrinters:
+        case btnDiscoverBluetoothPrinters:
           setState(() {
             btMessage = 'Requesting permissions...';
             btStatus = OperationStatus.RECEIVING;
@@ -1738,6 +1796,27 @@ class _MyAppState extends State<MyApp> {
               setState(() {
                 btStatus = OperationStatus.ERROR;
                 btMessage = error.toString();
+              });
+            },
+          );
+          break;
+        case btnDiscoverTCPIPPrinters:
+          setState(() {
+            printersTcpIpDiscovery = OperationStatus.SENDING;
+            foundTcpIpPrintersMessage = 'Scanning for Zebra printers...';
+          });
+          widget.zsdk.discoverTCPIPPrinters().then(
+                (devices) {
+              setState(() {
+                foundTcpIpPrinters = devices;
+                printersTcpIpDiscovery = OperationStatus.SUCCESS;
+                foundTcpIpPrintersMessage = 'Found ${devices.length} printer(s)';
+              });
+            },
+            onError: (error, stacktrace) {
+              setState(() {
+                printersTcpIpDiscovery = OperationStatus.ERROR;
+                foundTcpIpPrintersMessage = error.toString();
               });
             },
           );
