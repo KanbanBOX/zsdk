@@ -14,9 +14,10 @@ import com.zebra.sdk.comm.Connection;
 import com.zebra.sdk.printer.PrinterLanguage;
 import com.zebra.sdk.printer.ZebraPrinter;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
-import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
+import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
+import com.zebra.sdk.printer.discovery.NetworkDiscoverer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,6 +86,7 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
   static final String _DO_MANUAL_CALIBRATION_OVER_TCP_IP = "doManualCalibrationOverTCPIP";
   static final String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP = "printConfigurationLabelOverTCPIP";
   static final String _REBOOT_PRINTER_OVER_TCP_IP = "rebootPrinterOverTCPIP";
+  static final String _DISCOVER_TCP_IP_PRINTERS = "discoverTCPIPPrinters";
 
   /** Methods - Bluetooth */
   static final String _PRINT_PDF_FILE_OVER_BLUETOOTH = "printPdfFileOverBluetooth";
@@ -149,6 +151,9 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
           return;
         case _DISCOVER_BLUETOOTH_PRINTERS:
           discoverBluetoothPrinters(result);
+          return;
+        case _DISCOVER_TCP_IP_PRINTERS:
+          discoverTCPIPPrinters(result);
           return;
       }
 
@@ -440,6 +445,44 @@ public class ZsdkPlugin implements FlutterPlugin, MethodCallHandler {
           }
         });
 
+      } catch (Exception e) {
+        e.printStackTrace();
+        new Handler(Looper.getMainLooper()).post(() -> {
+          result.error("DISCOVERY_ERROR", "Failed to discover printers: " + e.getMessage(), null);
+        });
+      }
+    }).start();
+  }
+
+  private void discoverTCPIPPrinters(Result result) {
+    new Thread(() -> {
+      try {
+        List<Map<String, String>> printerList = new ArrayList<>();
+
+        NetworkDiscoverer.findPrinters(new DiscoveryHandler() {
+          @Override
+          public void foundPrinter(DiscoveredPrinter printer) {
+            Map<String, String> printerMap = new HashMap<>();
+            printerMap.put("address", printer.address);
+            String name = printer.getDiscoveryDataMap().get("SYSTEM_NAME");
+            printerMap.put("name", name != null ? name : "Zebra Printer");
+            printerList.add(printerMap);
+          }
+
+          @Override
+          public void discoveryFinished() {
+            new Handler(Looper.getMainLooper()).post(() -> {
+              result.success(printerList);
+            });
+          }
+
+          @Override
+          public void discoveryError(String message) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+              result.error("DISCOVERY_ERROR", message, null);
+            });
+          }
+        });
       } catch (Exception e) {
         e.printStackTrace();
         new Handler(Looper.getMainLooper()).post(() -> {

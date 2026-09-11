@@ -5,6 +5,7 @@
 #import "ZebraPrinterFactory.h"
 #import "ZebraPrinterConnection.h"
 #import "TcpPrinterConnection.h"
+#import "NetworkDiscoverer.h"
 #import "SGD.h"
 
 #import "CauseUtils.h"
@@ -50,6 +51,8 @@ NSString* _REBOOT_PRINTER_OVER_BLUETOOTH = @"rebootPrinterOverBluetooth";
 
 /* Methods - Bluetooth Device Discovery */
 NSString* _GET_BONDED_DEVICES = @"getBondedDevices";
+NSString* _DISCOVER_BLUETOOTH_PRINTERS = @"discoverBluetoothPrinters";
+NSString* _DISCOVER_TCP_IP_PRINTERS = @"discoverTCPIPPrinters";
 
 /* Properties */
 NSString* _filePath = @"filePath";
@@ -194,6 +197,10 @@ NSString* _dpi = @"dpi";
             [printer rebootPrinter:arguments[_address] port:arguments[_port]];
         else if ([_GET_BONDED_DEVICES isEqualToString:call.method])
             [self getBondedDevicesWithResult:result];
+        else if ([_DISCOVER_BLUETOOTH_PRINTERS isEqualToString:call.method])
+            [self discoverBluetoothPrintersWithResult:result];
+        else if ([_DISCOVER_TCP_IP_PRINTERS isEqualToString:call.method])
+            [self discoverTCPIPPrintersWithResult:result];
         else if ([_DO_MANUAL_CALIBRATION_OVER_BLUETOOTH isEqualToString:call.method])
             [printer doManualCalibrationOverBluetooth:arguments[_macAddress]];
         else if ([_PRINT_CONFIGURATION_LABEL_OVER_BLUETOOTH isEqualToString:call.method])
@@ -239,6 +246,43 @@ NSString* _dpi = @"dpi";
         result(deviceList);
     } @catch (NSException *e) {
         result([FlutterError errorWithCode:@"BLUETOOTH_ERROR" message:[NSString stringWithFormat:@"Failed to get bonded devices: %@", e.reason] details:nil]);
+    }
+}
+
+- (void)discoverBluetoothPrintersWithResult:(FlutterResult)result {
+    [self getBondedDevicesWithResult:result];
+}
+
+- (void)discoverTCPIPPrintersWithResult:(FlutterResult)result {
+    @try {
+        NSError *error = nil;
+        NSArray *printers = [NetworkDiscoverer localBroadcast:&error];
+
+        if (error != nil) {
+            @throw [NSException exceptionWithName:@"Discovery Error"
+                                        reason:[error localizedDescription]
+                                        userInfo:nil];
+        }
+
+        NSMutableArray *deviceList = [[NSMutableArray alloc] init];
+        for (id printer in printers) {
+            NSString *address = [printer respondsToSelector:@selector(address)] ? [printer valueForKey:@"address"] : @"";
+            NSString *name = [printer respondsToSelector:@selector(dnsName)] ? [printer valueForKey:@"dnsName"] : nil;
+            if (name == nil || [name length] == 0) {
+                name = @"Zebra Printer";
+            }
+
+            NSMutableDictionary *deviceMap = [[NSMutableDictionary alloc] init];
+            [deviceMap setObject:name forKey:@"name"];
+            [deviceMap setObject:(address != nil ? address : @"") forKey:@"address"];
+            [deviceList addObject:deviceMap];
+        }
+
+        result(deviceList);
+    } @catch (NSException *e) {
+        result([FlutterError errorWithCode:@"DISCOVERY_ERROR"
+                                   message:[NSString stringWithFormat:@"Failed to discover TCP/IP printers: %@", e.reason]
+                                   details:nil]);
     }
 }
 

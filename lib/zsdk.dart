@@ -51,6 +51,7 @@ class ZSDK {
   static const String _PRINT_CONFIGURATION_LABEL_OVER_TCP_IP =
       'printConfigurationLabelOverTCPIP';
   static const String _REBOOT_PRINTER_OVER_TCP_IP = 'rebootPrinterOverTCPIP';
+  static const String _DISCOVER_TCP_IP_PRINTERS = 'discoverTCPIPPrinters';
 
   /// Methods - Bluetooth
   static const String _PRINT_PDF_FILE_OVER_BLUETOOTH =
@@ -463,7 +464,22 @@ class ZSDK {
         .timeout(timeout ??= const Duration(seconds: 30),
             onTimeout: () => <Map<String, String>>[]);
     if (result == null) return [];
-    return (result as List).map((device) {
+    return _mapPrinterDiscoveryResult(result as List<dynamic>);
+  }
+
+  Future<List<Map<String, String>>> discoverTCPIPPrinters({
+    Duration? timeout,
+  }) async {
+    final result = await _channel
+        .invokeMethod(_DISCOVER_TCP_IP_PRINTERS)
+        .timeout(timeout ??= const Duration(seconds: 30),
+            onTimeout: () => <Map<String, String>>[]);
+    if (result == null) return [];
+    return _mapPrinterDiscoveryResult(result as List<dynamic>);
+  }
+
+  List<Map<String, String>> _mapPrinterDiscoveryResult(List<dynamic> devices) {
+    return devices.map((device) {
       final map = device as Map;
       return {
         'name': map['name']?.toString() ?? 'Unknown',
