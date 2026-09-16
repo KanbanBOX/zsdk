@@ -16,7 +16,7 @@ This is a flutter plugin for the Link-OS Multiplatform SDK for [Zebra](https://w
 | Print configuration label | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:      |
 | Run calibration           | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:      |
 | Reboot printer            | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark:      |
-| Printer discovery         | :white_check_mark: | :x:                | :white_check_mark: | :white_check_mark:      |
+| Printer discovery         | :x:                | :x:                | :white_check_mark: | :white_check_mark:      |
 
 ### Connection Types
 - **TCP/IP**: Supported on both iOS and Android

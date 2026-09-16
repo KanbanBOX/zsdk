@@ -351,7 +351,7 @@ class _MyAppState extends State<MyApp> {
                                 ? null
                                 : () => onClick(btnDiscoverTCPIPPrinters),
                             child: Text(
-                              'Discover TCP-IP Printers',
+                              'Discover TCP-IP Printers (Android only)',
                               textAlign: TextAlign.center,
                             ),
                           ),
